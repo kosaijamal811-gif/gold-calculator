@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root { --gold: #FFD700; --silver: #E2E2E2; --bg: #000; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background: transparent; color: white; display: flex; justify-content: center; padding: 10px; }
+
+        .unified-card { 
+            width: 100%; max-width: 380px; background: var(--bg); border: 2px solid #222; 
+            border-radius: 20px; padding: 20px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+        }
+
+        .market-display { 
+            background: #111; border-radius: 15px; padding: 15px; margin-bottom: 20px; 
+            border: 1px solid #333; display: flex; flex-direction: column; gap: 8px;
+        }
+        .live-row { display: flex; justify-content: space-between; align-items: center; }
+        .live-label { font-size: 11px; font-weight: 800; color: #555; text-transform: uppercase; }
+        .live-price { font-size: 18px; font-weight: 900; color: var(--gold); font-family: monospace; }
+
+        .btn-box { display: flex; gap: 8px; margin-bottom: 20px; }
+        .btn { flex: 1; padding: 14px; border: none; border-radius: 12px; font-size: 14px; font-weight: 900; cursor: pointer; }
+        .g-on { background: var(--gold); color: black; }
+        .s-on { background: var(--silver); color: black; }
+        .off { background: #1a1a1a; color: white; }
+
+        input { width: 100%; background: transparent; border: none; border-bottom: 3px solid var(--gold); color: white; font-size: 45px; font-weight: 900; text-align: center; outline: none; margin-bottom: 20px; }
+        
+        .selectors { display: flex; gap: 8px; margin-bottom: 20px; }
+        select { flex: 1; background: #000; color: white; border: 1px solid #333; padding: 12px; border-radius: 10px; font-size: 13px; font-weight: bold; }
+
+        .total-box { padding: 10px; }
+        .final-val { font-size: 48px; font-weight: 900; color: var(--gold); letter-spacing: -1px; }
+        .status { color: #00FF88; font-size: 10px; font-weight: bold; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="unified-card">
+    <div class="market-display">
+        <div class="live-row">
+            <span class="live-label">Gold Spot</span>
+            <span id="goldSpot" class="live-price">$0.00</span>
+        </div>
+        <div class="live-row">
+            <span class="live-label">Silver Spot</span>
+            <span id="silverSpot" class="live-price" style="color:var(--silver)">$0.00</span>
+        </div>
+    </div>
+
+    <div class="btn-box">
+        <button id="gB" class="btn g-on" onclick="setM('G')">GOLD</button>
+        <button id="sB" class="btn off" onclick="setM('S')">SILVER</button>
+    </div>
+
+    <input type="number" id="amt" value="1" oninput="recalc()">
+    
+    <div class="selectors">
+        <select id="unt" onchange="recalc()">
+            <option value="OZ">Ounce</option>
+            <option value="GR">Gram</option>
+        </select>
+        <select id="krt" onchange="recalc()">
+            <option value="24">24 Karat</option>
+            <option value="21">21 Karat</option>
+            <option value="18">18 Karat</option>
+        </select>
+    </div>
+
+    <div class="total-box">
+        <div id="res" class="final-val">--</div>
+        <div style="font-size: 10px; color: #444; font-weight: bold;">TOTAL MARKET VALUE (USD)</div>
+        <div class="status">● LIVE MODE</div>
+    </div>
+</div>
+
+<script>
+let rates = { gold: 2035.00, silver: 23.90 };
+let mode = 'G';
+const OZ = 31.1035;
+
+function updateSpot() {
+    document.getElementById('goldSpot').innerText = '$' + rates.gold.toFixed(2);
+    document.getElementById('silverSpot').innerText = '$' + rates.silver.toFixed(2);
+}
+
+function setM(m) {
+    mode = m;
+    document.getElementById('gB').className = m === 'G' ? 'btn g-on' : 'btn off';
+    document.getElementById('sB').className = m === 'S' ? 'btn s-on' : 'btn off';
+    document.getElementById('krt').style.display = m === 'G' ? 'block' : 'none';
+    recalc();
+}
+
+function recalc() {
+    const q = +document.getElementById('amt').value || 0;
+    const u = document.getElementById('unt').value;
+    const k = document.getElementById('krt').value;
+    const out = document.getElementById('res');
+
+    let spot = mode === 'G' ? rates.gold : rates.silver;
+    let price;
+
+    if (mode === 'G') {
+        let g24 = spot / OZ;
+        let r = k == 24 ? 1 : k == 21 ? 0.875 : 0.75;
+        price = u === 'OZ' ? spot * r : g24 * r;
+    } else {
+        price = u === 'OZ' ? spot : spot / OZ;
+    }
+
+    out.innerText = '$' + (q * price).toFixed(2);
+}
+
+updateSpot();
+recalc();
+</script>
+
+</body>
+</html>
